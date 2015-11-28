@@ -10,17 +10,22 @@ var CC_STATES = {
     DEATH: {value: 5, name:"DEATH"}
 };
 
-function CommonCell(game, x, y, parentDNA) {
+function CommonCell(game, x, y, parentDNA1, parentDNA2) {
     Phaser.Sprite.call(this, game, x, y, 'commoncell');
     this.game = game;
-    this.DNA = parentDNA;
+    this.DNA = parentDNA1 + parentDNA2;
 
     this.ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 
     // Mutate DNA on creation
     this.DNA = this.mutateDna();
-
     this.isInfected = false;
+
+    if(this.DNA != parentDNA1+parentDNA2) {
+        //this.isInfected = true;
+        this.tint = 0xD0FF12;
+    }
+
 
     this.currentState = CC_STATES.BORN;
 
@@ -48,15 +53,14 @@ function CommonCell(game, x, y, parentDNA) {
     this.body.velocity.y = Math.random() * 100;
     this.animations.add('idle');
     this.animations.play('idle', 10, true);
-    
+
     this.MAX_HEIGHT = 64;
     this.MAX_WIDTH = 64;
 
-    this.body.height = 35;
-    this.body.width = 35;
+    this.body.setSize(32,32, 15, 15);
 
-    //this.height = 1;
-    //this.width = 1;
+    this.height = 1;
+    this.width = 1;
 
 
     this.alive = true;
@@ -64,21 +68,14 @@ function CommonCell(game, x, y, parentDNA) {
     this.input.useHandCursor = true;
     this.events.onInputDown.add(this.onDown, this);
 
-
-    
-    var space_key = this.game.input.keyboard.addKey(Phaser.Keyboard.ESC);
-    //space_key.onDown.add(this.escKey, this); 
-
-    this.events.onKilled.add(this.handleDeath, this)
+    this.events.onKilled.add(this.handleDeath, this);
 
     //this.inputEnabled = true;
-    
 
-    if(DEBUG == true) {
-        style = {font: "10px Arial", fill: "#ff0044", wordWrap: true, wordWrapWidth: this.width, align: "center" };
-        this.text = game.add.text(x, y, this.DNA, style);    
-    }
-    
+
+    style = {font: "12px Arial", fill: "#ffffff", wordWrap: true, wordWrapWidth: this.width, align: "center" };
+    this.text = game.add.text(this.x, this.y-15, "DNA:"+this.DNA, style);
+    this.text.visible = false;
 };
 
 CommonCell.prototype = Object.create(Phaser.Sprite.prototype);
@@ -86,72 +83,51 @@ CommonCell.prototype.constructor = CommonCell;
 
 
 CommonCell.prototype.onDown=function(cell, cursor) {
-    
-
-    var style = { font: "14px Arial", fill: "#FFFFFF", wordWrap: false, wordWrapWidth: this.width, align: "center" };
-    var style2= { font: "12px Arial", fill: "#FFFFFF", wordWrap: false, wordWrapWidth: this.width, align: "left" };
-   
-    ui=game.add.sprite(20,20, 'ui');
-    text1 = game.add.text(60, 30, "Cell Stats:" , style);
-    text2 = game.add.text(30, 60, "Generation: " , style2);
-    text3 = game.add.text(30,80, "Hunger: "+this.hunger, style2);
-    text4 = game.add.text(30,100, "Has Mated: "+this.isMated, style2);
-    text5 = game.add.text(30, 120, "DNA:" + this.DNA, style2);
-    this.isSelected = true;
-   
-
-}
-
-CommonCell.prototype.escKey=function(){
-    ui.visible=false;
-    text1.visible=false;
-    text2.visible=false;
-    text3.visible=false;
-    text4.visible=false;    
-    text5.visible=false;
-}
+    this.isSelected = !this.isSelected;
+};
 
 CommonCell.prototype.moveCell = function() {
 
 };
 
 CommonCell.prototype.handleDeath = function() {
-    cells = this.game.world.children[1];
-    
-    if(DEBUG == true) {
-        console.log(cells);    
-    }
-    
+    cells = this.game.world.children[3];
+
     if(this.wasKilled == false) {
         var tempCell = new CommonCell(this.game, this.x-5, this.y-5, this.DNA);
         cells.add(tempCell);
 
         tempCell = new CommonCell(this.game, this.x+5, this.y+5, this.DNA);
-        cells.add(tempCell);    
+        cells.add(tempCell);
     }
-    
+
+    //this.text.visible=false;
+
 };
 
 CommonCell.prototype.updateCell = function() {
     this.moveCell();
 
     //game.debug.renderPhysicsBody(this.body);
-
-    if(DEBUG == true)
-    {
-        this.text.x = this.body.x;
-        this.text.y = this.body.y;    
+    if(this.isSelected) {
+        this.text.visible = true;
+        this.text.x = this.body.x-10;
+        this.text.y = this.body.y-15;
     }
+    else {
+        this.text.visible=false;
+    }
+
 
     // Update cell states
     //BORN STATE
     if(this.currentState == CC_STATES.BORN) {
-        
-        // set animation
-        //this.width += 1;
-        //this.height += 1;
 
-        if(/*this.width == this.MAX_WIDTH || this.height == this.MAX_HEIGHT*/true) {
+        // set animation
+        this.width += 1;
+        this.height += 1;
+
+        if(this.width == this.MAX_WIDTH || this.height == this.MAX_HEIGHT) {
             this.currentState = CC_STATES.SEARCH_FOOD;
         }
 
@@ -165,7 +141,7 @@ CommonCell.prototype.updateCell = function() {
             this.currentState = CC_STATES.DEATH;
             this.wasKilled = true;
         }
-
+        this.resizeCell(64,64);
         this.tint = 0x93E68A;
     }
     //SEARCHING FOR MATE <3
@@ -207,7 +183,7 @@ CommonCell.prototype.updateCell = function() {
         this.tint = 0xB3FF30;
     }
 
-    
+
 };
 
 CommonCell.prototype.checkCommonCellCollision = function(commonCell) {
@@ -228,12 +204,12 @@ CommonCell.prototype.secondElapsed = function() {
     if(this.isMated == true) {
         this.matingTime--;
     }
-    
-    this.hunger += 1;
-    
+
+    this.hunger += 2;
+
     if(this.game.rnd.integerInRange(0,100)%2 === 0) {
-        this.body.velocity.y = this.body.velocity.y + this.game.rnd.integerInRange(-15, 15);
-        this.body.velocity.x = this.body.velocity.x + this.game.rnd.integerInRange(-15, 15);
+        this.body.velocity.y = this.body.velocity.y + this.game.rnd.integerInRange(-10, 10);
+        this.body.velocity.x = this.body.velocity.x + this.game.rnd.integerInRange(-10, 10);
     }
 };
 
@@ -243,10 +219,10 @@ CommonCell.prototype.mutateDna = function() {
     {
         if(this.game.rnd.integerInRange(0,50) % 7 == 0)
         {
-            result += this.ALPHABET[this.game.rnd.integerInRange(0,this.ALPHABET.length)];
+            result += this.ALPHABET[this.game.rnd.integerInRange(0,this.ALPHABET.length-1)];
         }
         else{
-            result += this.DNA[i];    
+            result += this.DNA[i];
         }
     }
     return result;
@@ -255,6 +231,13 @@ CommonCell.prototype.mutateDna = function() {
 CommonCell.prototype.checkCollidedProtein = function(protein) {
     if(this.currentState == CC_STATES.SEARCH_FOOD) {
         this.hunger -= protein.proteinValue;
+        this.resizeCell(this.width+5, this.height+5);
         protein.kill();
     }
+};
+
+CommonCell.prototype.resizeCell = function(width, height) {
+    this.width = width;
+    this.height = height;
+    this.body.setSize(this.width/2, this.height/2);
 };

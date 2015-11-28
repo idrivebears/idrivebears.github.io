@@ -7,6 +7,8 @@ function ProteinMolecule(game, x, y) {
 
     game.physics.enable(this, Phaser.Physics.ARCADE);
 
+    this.maxSize = 64;
+
     this.proteinValue = 15;
 
     this.body.gravity.y = 0;
@@ -17,22 +19,24 @@ function ProteinMolecule(game, x, y) {
     this.body.velocity.y = 100 * Math.random();
     this.animations.add('idle');
     this.animations.play('idle', 10, true);
-    this.body.height = 38;
-    this.body.width = 38;
+    
+    this.body.setSize(22,22,22,22);
+
+    //this.events.onKilled.add(this.handleDeath, this);
     
     this.alive = true;
 
-    this.body.height = 0;
-    this.body.width = 0;
+    this.height = 0;
+    this.width = 0;
 };
 
 ProteinMolecule.prototype = Object.create(Phaser.Sprite.prototype);
 ProteinMolecule.prototype.constructor = ProteinMolecule;
 
 ProteinMolecule.prototype.updateProtein = function() {
-    if(this.body.width ) {
-        this.body.width += 1;
-        this.body.height += 1;
+    if(this.width < this.maxSize) {
+        this.width += 1;
+        this.height += 1;
     }
 };
 

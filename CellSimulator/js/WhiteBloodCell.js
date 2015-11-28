@@ -29,8 +29,7 @@ function WhiteBloodCell(game, x, y, sicknessIndicator) {
     this.body.velocity.y = 100 * Math.random();
     this.animations.add('idle');
     this.animations.play('idle', 10, true);
-    this.body.height = 35;
-    this.body.width = 35;
+    this.body.setSize(20,34, 23,10);
     this.alive = true;
 };
 
@@ -94,10 +93,11 @@ WhiteBloodCell.prototype.checkCollidedCell = function(commonCell) {
     }
 
     else {
-        // If the cell has already been tagged, mark its death 
+        // If the cell has already been tagged, mark its death
         if(this.isKilling == true && commonCell.isInfected == true) {
             commonCell.wasKilled = true;
             commonCell.currentState = CC_STATES.DEATH;
+            return true;
         }
         // Tag the cell as infected on the first run
         else {
@@ -108,7 +108,8 @@ WhiteBloodCell.prototype.checkCollidedCell = function(commonCell) {
 
                     this.isKilling = true;
                 }
-            }            
+            }
         }
     }
+    return false;
 };

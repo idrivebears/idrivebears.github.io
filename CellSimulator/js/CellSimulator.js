@@ -14,8 +14,12 @@ var SimulatorState = function(game) {
     this.whiteBloodCells = null;
     this.proteins = null;
 
-    this.proteinsPerSecond = 2;
-    this.maxProteins = 15;
+    this.proteinsPerSecond = 5;
+    this.maxProteins = 25;
+
+    this.displayText = null;
+
+    this.cellsEliminated = 0;
 };
 
 SimulatorState.prototype.preload = function() {
@@ -33,11 +37,14 @@ SimulatorState.prototype.create = function() {
 
     // Set background to trippy ass dank ass cell type thing
     background = this.game.add.sprite(0, 0, 'background');
-    
 
+    this.displayText = this.game.add.text(20,20, 'Game data: ', {fontSize:'20px', fill:'#fff'});
     // Create initial common cells
-    var startingCells = 15;
+    var startingCells = 30;
     var startingSeed = "ab";
+
+    this.proteins = this.game.add.group();
+    this.proteins.enableBody = true;
 
     this.commonCells = this.game.add.group();
     this.commonCells.enableBody = true;        //  Enable physics for any cell in the group
@@ -45,13 +52,13 @@ SimulatorState.prototype.create = function() {
     for(var i = 0; i < startingCells; i++) {
         var randx = this.game.rnd.integerInRange(0, this.game.width);
         var randy = this.game.rnd.integerInRange(0, this.game.height);
-        var testCell = new CommonCell(this.game, randx, randy, startingSeed);
-        testCell.onKilled = 
-        this.commonCells.add(testCell);
+        var testCell = new CommonCell(this.game, randx, randy, "a", "b");
+
+        testCell.onKilled = this.commonCells.add(testCell);
     }
 
     // Create initial white blood cells
-    startingCells = 2;
+    startingCells = 4;
     var sicknessIndicator = ['z', 'r'];
 
     this.whiteBloodCells = this.game.add.group();
@@ -63,9 +70,6 @@ SimulatorState.prototype.create = function() {
         var testWhiteBloodCell = new WhiteBloodCell(this.game, randx, randy, sicknessIndicator);
         this.whiteBloodCells.add(testWhiteBloodCell);
     }
-
-    this.proteins = this.game.add.group();
-    this.proteins.enableBody = true;
 
     //setting 1s tick
     console.log("Setting 1s tick");
@@ -104,8 +108,27 @@ SimulatorState.prototype.update = function() {
     }, this);
 };
 
+SimulatorState.prototype.render = function() {
+
+    if(DEBUG) {
+        this.commonCells.forEachAlive(function(cell){
+            this.game.debug.body(cell);
+        },this);
+        this.whiteBloodCells.forEachAlive(function(whiteBloodCell){
+            this.game.debug.body(whiteBloodCell);
+        },this);
+        this.proteins.forEachAlive(function(protein){
+            this.game.debug.body(protein);
+        },this);
+    }
+
+
+};
+
 SimulatorState.prototype.whiteBloodCellCollision = function(commonCell, whiteBloodCell) {
-    whiteBloodCell.checkCollidedCell(commonCell);
+    if(whiteBloodCell.checkCollidedCell(commonCell)) {
+        this.cellsEliminated += 1;
+    }
 };
 
 SimulatorState.prototype.proteinCollision = function(commonCell, protein) {
@@ -143,12 +166,12 @@ SimulatorState.prototype.onSecondElapsed = function() {
         console.log("Max food reached");
     }
 
-
+    this.displayText.text = "Game data: \nTotal cells alive: " + this.commonCells.countLiving() +"\nCells Eliminated: "+this.cellsEliminated;
     this.game.time.events.add(Phaser.Timer.SECOND * 1, this.onSecondElapsed, this);
-}
+};
 
 
 
 //Create new game with the simulator starting state
-var game = new Phaser.Game(1280, 600, Phaser.CANVAS, 'game');
+var game = new Phaser.Game(1280, 600, Phaser.AUTO, 'game');
 game.state.add('simulator', SimulatorState, true);
