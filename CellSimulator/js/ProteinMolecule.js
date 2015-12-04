@@ -22,7 +22,7 @@ function ProteinMolecule(game, x, y) {
     
     this.body.setSize(22,22,22,22);
 
-    //this.events.onKilled.add(this.handleDeath, this);
+    this.events.onKilled.add(this.handleDeath, this);
     
     this.alive = true;
 
@@ -32,6 +32,13 @@ function ProteinMolecule(game, x, y) {
 
 ProteinMolecule.prototype = Object.create(Phaser.Sprite.prototype);
 ProteinMolecule.prototype.constructor = ProteinMolecule;
+
+ProteinMolecule.prototype.handleDeath = function() {
+    while(this.width > 0) {
+        this.width --;
+        this.height --;
+    }
+};
 
 ProteinMolecule.prototype.updateProtein = function() {
     if(this.width < this.maxSize) {

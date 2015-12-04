@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Phaser - Making your first game, part 3</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.image('sky', 'assets/sky.png');
+    game.load.image('ground', 'assets/platform.png');
+    game.load.image('star', 'assets/star.png');
+    game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+}
+
+function create() {
+
+    //Enable engines physics
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    //Add background to the game
+    game.add.sprite(0,0,'sky');
+
+    //new platforms group for containing ground and ledges to jump to
+    platforms = game.add.group();
+
+    //This enables physics to all objects in this group
+    platforms.enableBody = true;
+
+    //Creating the groung
+    var ground = platforms.create(0, game.world.height - 64, 'ground');
+
+    //Scale it to fit the width of the game(original size is 400 x 32)
+    ground.scale.setTo(2, 2);
+
+    //This stops it from falling away when you jump on it
+    //Solid object
+    ground.body.immovable = true;
+
+    //Creating two ledges
+    var ledge = platforms.create(400,400, 'ground');
+    ledge.body.immovable = true;
+
+    //Ledge 2
+    ledge = platforms.create(-150, 250, 'ground');
+    ledge.body.immovable = true;
+
+    //Player sprite
+    player = game.add.sprite(32, game.world.height-150, 'dude');
+
+    //enable physics for the player
+    game.physics.arcade.enable(player);
+
+    //Player physics properties. Give the little guy a slight bounce.
+    player.body.bounce.y = 0.2;
+    player.body.gravity.y = 300;
+    player.body.collideWorldBounds = true;
+
+    //Animations
+    //left animation uses frames 0-3, and runs at 10 fps, the true parameter means loop
+    player.animations.add('left', [0,1,2,3], 10, true);
+    player.animations.add('right', [5,6,7,8], 10, true);
+
+
+
+
+}
+
+function update() {
+    //Add collision detection for the player to the platforms
+    game.physics.arcade.collide(player, platforms);
+}
+
+</script>
+
+</body>
+</html>

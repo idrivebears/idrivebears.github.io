@@ -73,8 +73,9 @@ function CommonCell(game, x, y, parentDNA1, parentDNA2) {
     //this.inputEnabled = true;
 
 
-    style = {font: "12px Arial", fill: "#ffffff", wordWrap: true, wordWrapWidth: this.width, align: "center" };
-    this.text = game.add.text(this.x, this.y-15, "DNA:"+this.DNA, style);
+    style = {font: "18px Arial", fill: "#ffffff", wordWrap: true, wordWrapWidth: this.width, align: "center" };
+    this.text = game.add.text(this.x-15, this.y-15, "DNA:"+this.DNA, style);
+    this.text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 5);
     this.text.visible = false;
 };
 
@@ -91,17 +92,17 @@ CommonCell.prototype.moveCell = function() {
 };
 
 CommonCell.prototype.handleDeath = function() {
-    cells = this.game.world.children[3];
+    cells = this.game.world.children[2];
 
     if(this.wasKilled == false) {
-        var tempCell = new CommonCell(this.game, this.x-5, this.y-5, this.DNA);
+        var tempCell = new CommonCell(this.game, this.x-5, this.y-5, this.DNA,  this.DNA);
         cells.add(tempCell);
 
-        tempCell = new CommonCell(this.game, this.x+5, this.y+5, this.DNA);
+        tempCell = new CommonCell(this.game, this.x+5, this.y+5, this.DNA, this.DNA);
         cells.add(tempCell);
     }
-
-    //this.text.visible=false;
+    this.isSelected = false;
+    this.text.visible=false;
 
 };
 
@@ -111,8 +112,9 @@ CommonCell.prototype.updateCell = function() {
     //game.debug.renderPhysicsBody(this.body);
     if(this.isSelected) {
         this.text.visible = true;
-        this.text.x = this.body.x-10;
-        this.text.y = this.body.y-15;
+        this.text.x = this.body.x-105;
+        this.text.y = this.body.y-55;
+        this.text.text = "DNA:"+this.DNA+"\n"+"CurrentState:"+this.currentState.name;
     }
     else {
         this.text.visible=false;
@@ -215,15 +217,12 @@ CommonCell.prototype.secondElapsed = function() {
 
 CommonCell.prototype.mutateDna = function() {
     var result = "";
-    for(var i = 0; i < this.DNA.length; i++)
+    for (var i = 0; i < this.DNA.length; i++)
     {
-        if(this.game.rnd.integerInRange(0,50) % 7 == 0)
-        {
-            result += this.ALPHABET[this.game.rnd.integerInRange(0,this.ALPHABET.length-1)];
-        }
-        else{
+        if (this.game.rnd.integerInRange(0,50) % 7 == 0)
+            result += this.ALPHABET[this.game.rnd.integerInRange(0,this.ALPHABET.length-2)];
+        else
             result += this.DNA[i];
-        }
     }
     return result;
 };

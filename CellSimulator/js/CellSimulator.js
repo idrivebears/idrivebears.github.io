@@ -23,11 +23,14 @@ var SimulatorState = function(game) {
 };
 
 SimulatorState.prototype.preload = function() {
+    //this.game.load.audio('eat', 'assets/audio/eat.mp3');
+    //this.game.load.audio('kill', 'assets/audio/kill.mp3');
+    //this.game.load.audio('mate', 'assets/audio/mate.mp3');
     this.game.load.image('background', 'assets/bg.png');
     this.game.load.image('ui', 'assets/ui.png');
     this.game.load.spritesheet('commoncell', 'assets/CommonCell2_Sprite.png', 64, 64);
     this.game.load.spritesheet('protein', 'assets/protein.png', 64 ,64);
-    this.game.load.spritesheet('whitebloodcell', 'assets/WhiteBloodCell_Sprite.png', 64, 64);
+    this.game.load.spritesheet('whitebloodcell', 'assets/WhiteBloodCell_Sprite4.png', 64, 64);
 };
 
 SimulatorState.prototype.create = function() {
@@ -38,7 +41,6 @@ SimulatorState.prototype.create = function() {
     // Set background to trippy ass dank ass cell type thing
     background = this.game.add.sprite(0, 0, 'background');
 
-    this.displayText = this.game.add.text(20,20, 'Game data: ', {fontSize:'20px', fill:'#fff'});
     // Create initial common cells
     var startingCells = 30;
     var startingSeed = "ab";
@@ -59,7 +61,7 @@ SimulatorState.prototype.create = function() {
 
     // Create initial white blood cells
     startingCells = 4;
-    var sicknessIndicator = ['z', 'r'];
+    var sicknessIndicator = ['z', 'r', 'h', 'f'];
 
     this.whiteBloodCells = this.game.add.group();
     this.commonCells.enableBody = true;
@@ -70,6 +72,9 @@ SimulatorState.prototype.create = function() {
         var testWhiteBloodCell = new WhiteBloodCell(this.game, randx, randy, sicknessIndicator);
         this.whiteBloodCells.add(testWhiteBloodCell);
     }
+
+    this.displayText = this.game.add.text(20,20, 'Game data: ', {fontSize:'20px', fill:'#fff'});
+    this.displayText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 5);
 
     //setting 1s tick
     console.log("Setting 1s tick");
@@ -128,6 +133,7 @@ SimulatorState.prototype.render = function() {
 SimulatorState.prototype.whiteBloodCellCollision = function(commonCell, whiteBloodCell) {
     if(whiteBloodCell.checkCollidedCell(commonCell)) {
         this.cellsEliminated += 1;
+
     }
 };
 
@@ -166,7 +172,7 @@ SimulatorState.prototype.onSecondElapsed = function() {
         console.log("Max food reached");
     }
 
-    this.displayText.text = "Game data: \nTotal cells alive: " + this.commonCells.countLiving() +"\nCells Eliminated: "+this.cellsEliminated;
+    this.displayText.text = "Game data \nTotal cells alive: " + this.commonCells.countLiving() +"\nCells Eliminated: "+this.cellsEliminated;
     this.game.time.events.add(Phaser.Timer.SECOND * 1, this.onSecondElapsed, this);
 };
 
